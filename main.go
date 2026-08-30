@@ -4,9 +4,17 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "healthcheck" {
+		if runHealthCheck() {
+			return
+		}
+		os.Exit(1)
+	}
+
 	port := getEnv("PORT", "8080")
 	store := NewMemoryStore()
 
@@ -30,6 +38,22 @@ func main() {
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
+}
+
+func runHealthCheck() bool {
+	port := getEnv("PORT", "8080")
+
+	client := &http.Client{
+		Timeout: 2 * time.Second,
+	}
+
+	resp, err := client.Get("http://127.0.0.1:" + port + "/healthz")
+	if err != nil {
+		return false
+	}
+	defer resp.Body.Close()
+
+	return resp.StatusCode == http.StatusOK
 }
 
 func getEnv(key, fallback string) string {
