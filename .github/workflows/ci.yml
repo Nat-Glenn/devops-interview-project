@@ -57,7 +57,8 @@ jobs:
 
       - name: Build and publish container image
         run: |
-          IMAGE="ghcr.io/${{ github.repository }}:${{ github.sha }}"
+          REPOSITORY=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${REPOSITORY}:${{ github.sha }}"
           docker build -t "$IMAGE" .
           docker push "$IMAGE"
 
@@ -80,7 +81,8 @@ jobs:
 
       - name: Deploy published image
         run: |
-          IMAGE="ghcr.io/${{ github.repository }}:${{ github.sha }}"
+          REPOSITORY=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${REPOSITORY}:${{ github.sha }}"
 
           docker pull "$IMAGE"
 
