@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: Task API
+    orgId: 1
+    folder: Task API
+    type: file
+    disableDeletion: false
+    editable: true
+    options:
+      path: /var/lib/grafana/dashboards

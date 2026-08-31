@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -17,6 +19,7 @@ func main() {
 
 	port := getEnv("PORT", "8080")
 	store := NewMemoryStore()
+	RegisterTaskMetrics(store)
 
 	mux := http.NewServeMux()
 
@@ -24,7 +27,7 @@ func main() {
 	mux.HandleFunc("GET /healthz", HealthHandler)
 
 	// Metrics — Prometheus-compatible plaintext endpoint
-	mux.HandleFunc("GET /metrics", MetricsHandler(store))
+	mux.Handle("GET /metrics", promhttp.Handler())
 
 	// Task CRUD
 	mux.HandleFunc("GET /tasks", ListTasksHandler(store))
@@ -35,7 +38,7 @@ func main() {
 
 	addr := ":" + port
 	log.Printf("task-api starting on %s", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
+	if err := http.ListenAndServe(addr, MetricsMiddleware(mux)); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }
